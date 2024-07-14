@@ -1,0 +1,98 @@
+.treeContainer {
+  padding: 20px;
+}
+
+.nodeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.nodeRow {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.node {
+  padding: 10px 15px;
+  border-radius: 5px;
+  border: 1px solid #000;
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.maleNode {
+  background-color: #add8e6;
+}
+
+.femaleNode {
+  background-color: #ffb6c1;
+}
+
+.spouseConnector {
+  width: 20px;
+  height: 1px;
+  background-color: #000;
+  align-self: center;
+}
+
+.verticalConnector {
+  width: 1px;
+  height: 20px;
+  background-color: #000;
+}
+
+.childrenContainer {
+  display: flex;
+  gap: 20px;
+  position: relative;
+}
+
+.horizontalConnector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: #000;
+}
+
+.bottomButtonContainer {
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.singleButton {
+  justify-content: center;
+}
+
+.addButton,
+.editButton,
+.deleteButton,
+.addSpouseButton {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #fff;
+  border: 1px solid #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.addSpouseButton {
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+}

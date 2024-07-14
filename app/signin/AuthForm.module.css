@@ -1,0 +1,170 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #fef7ff;
+  min-height: 100vh;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #68548e;
+  font-size: 24px;
+  margin-bottom: 20px;
+  align-self: flex-start;
+}
+
+.title {
+  font-size: 24px;
+  color: #1d1b20;
+  margin-bottom: 30px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 14px;
+  color: #49454e;
+  margin-bottom: 5px;
+}
+
+.input {
+  padding: 12px;
+  border: 1px solid #79767a;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #1d1b20;
+  background-color: #ffffff;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #68548e;
+}
+
+.errorInput {
+  border-color: #ba1a1a;
+}
+
+.errorMessage {
+  color: #ba1a1a;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.submitButton {
+  background-color: #68548e;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submitButton:hover {
+  background-color: #4f3d74;
+}
+
+.submitButton:disabled {
+  background-color: #e7e0eb;
+  color: #1d1b20;
+  cursor: not-allowed;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: #fef7ff;
+  min-height: 100vh;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #68548e;
+  font-size: 24px;
+  margin-bottom: 20px;
+  align-self: flex-start;
+}
+
+.title {
+  font-size: 24px;
+  color: #1d1b20;
+  margin-bottom: 30px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 14px;
+  color: #49454e;
+  margin-bottom: 5px;
+}
+
+.input {
+  padding: 12px;
+  border: 1px solid #79767a;
+  border-radius: 4px;
+  font-size: 16px;
+  color: #1d1b20;
+  background-color: #ffffff;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #68548e;
+}
+
+.errorInput {
+  border-color: #ba1a1a;
+}
+
+.errorMessage {
+  color: #ba1a1a;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.submitButton {
+  background-color: #68548e;
+  color: #ffffff;
+  border: none;
+  border-radius: 20px;
+  padding: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submitButton:hover {
+  background-color: #4f3d74;
+}
+
+.submitButton:disabled {
+  background-color: #e7e0eb;
+  color: #1d1b20;
+  cursor: not-allowed;
+}

@@ -1,95 +1,57 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import React from "react";
+import { Star, Heart, Calendar } from "lucide-react";
+import styles from "./HomePage.module.css";
 
-export default function Home() {
+const HomePage = () => {
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
+      <div className={styles.banner}>
+        <h1 className={styles.bannerTitle}>Family Tree Management</h1>
+        <p className={styles.bannerSubtitle}>
+          The worst family tree management website ever
         </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+        <button className={styles.bannerButton}>
+          <Calendar className={styles.buttonIcon} />
+          Make your own tree now
+        </button>
       </div>
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
+      <div className={styles.buttonGroup}>
+        <button className={`${styles.button} ${styles.buttonPrimary}`}>
+          Feedback
+        </button>
+        <button className={`${styles.button} ${styles.buttonSecondary}`}>
+          Coming soon
+        </button>
       </div>
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <UserCard name="Chúc Nguyệt" joinDate="22/2/2022" />
+      <UserCard name="Hạ Minh" joinDate="13/6/2023" />
     </main>
   );
-}
+};
+
+const UserCard = ({ name, joinDate }: { name: string; joinDate: string }) => (
+  <div className={styles.userCard}>
+    <div className={styles.userAvatar}>
+      <div className={styles.avatarShape}></div>
+    </div>
+    <div className={styles.userInfo}>
+      <h2 className={styles.userName}>{name}</h2>
+      <p className={styles.userJoinDate}>Joined {joinDate}</p>
+      <p className={styles.userDescription}>
+        Supporting line text lorem ipsum dolor sit amet, consectetur.
+      </p>
+    </div>
+    <div className={styles.userActions}>
+      <div className={styles.starRating}>
+        {[...Array(5)].map((_, i) => (
+          <Star key={i} size={16} className={styles.starIcon} />
+        ))}
+      </div>
+      <Heart size={24} className={styles.heartIcon} />
+    </div>
+  </div>
+);
+
+export default HomePage;
