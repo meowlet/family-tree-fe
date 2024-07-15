@@ -111,10 +111,10 @@ export function NodeInfo(props: { nodeId: string }) {
           </span>
         </div>
       </div>
-      <button className={styles.logoutButton} onClick={handleLogout}>
+      {/* <button className={styles.logoutButton} onClick={handleLogout}>
         <LogOut className={styles.buttonIcon} />
         Logout
-      </button>
+      </button> */}
     </div>
   );
 }
