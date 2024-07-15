@@ -4,6 +4,7 @@ import useSWR from "swr";
 import styles from "./Tree.module.css";
 import Auth from "@/util/Auth";
 import { AddNodeForm } from "./form/AddNodeForm";
+import { useRouter } from "next/router";
 
 export interface TreeProps {
   treeId: string;
@@ -64,6 +65,10 @@ export function Tree(props: TreeProps) {
       }
     }
   }, [data, currentUserId]);
+
+  const handleNodeClick = (nodeId: string) => {
+    window.location.href = `/node/${nodeId}`;
+  };
 
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -136,6 +141,7 @@ export function Tree(props: TreeProps) {
         secondOneId: selectedSpouseId,
         marriageDate: marriageDate || null,
       });
+
       mutate();
       setShowAddSpouseForm(false);
       setSelectedNodeId(null);
@@ -203,6 +209,7 @@ export function Tree(props: TreeProps) {
             }`}
             onMouseEnter={() => setHoveredNode(node._id)}
             onMouseLeave={() => setHoveredNode(null)}
+            onClick={() => handleNodeClick(node._id)} // Add onClick event here
           >
             {node.user.fullName}
             {hoveredNode === node._id &&
@@ -215,21 +222,30 @@ export function Tree(props: TreeProps) {
                   >
                     <div
                       className={styles.editButton}
-                      onClick={() => handleEditClick(node._id)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the node click
+                        handleEditClick(node._id);
+                      }}
                     >
                       ✎
                     </div>
                     {showAddButton && (
                       <div
                         className={styles.addButton}
-                        onClick={() => handleAddClick(node._id)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering the node click
+                          handleAddClick(node._id);
+                        }}
                       >
                         +
                       </div>
                     )}
                     <div
                       className={styles.deleteButton}
-                      onClick={() => handleDeleteClick(node._id)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the node click
+                        handleDeleteClick(node._id);
+                      }}
                     >
                       🗑️
                     </div>
@@ -237,7 +253,10 @@ export function Tree(props: TreeProps) {
                   {showAddSpouseButton && (
                     <div
                       className={styles.addSpouseButton}
-                      onClick={() => handleAddSpouseClick(node._id)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the node click
+                        handleAddSpouseClick(node._id);
+                      }}
                     >
                       ❤
                     </div>
@@ -254,6 +273,7 @@ export function Tree(props: TreeProps) {
                 }`}
                 onMouseEnter={() => setHoveredNode(spouse._id)}
                 onMouseLeave={() => setHoveredNode(null)}
+                onClick={() => handleNodeClick(spouse._id)} // Add onClick event here
               >
                 {spouse.user.fullName}
                 {hoveredNode === spouse._id &&
@@ -261,13 +281,19 @@ export function Tree(props: TreeProps) {
                     <div className={styles.bottomButtonContainer}>
                       <div
                         className={styles.editButton}
-                        onClick={() => handleEditClick(spouse._id)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering the node click
+                          handleEditClick(spouse._id);
+                        }}
                       >
                         ✎
                       </div>
                       <div
                         className={styles.deleteButton}
-                        onClick={() => handleDeleteClick(spouse._id)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering the node click
+                          handleDeleteClick(spouse._id);
+                        }}
                       >
                         🗑️
                       </div>

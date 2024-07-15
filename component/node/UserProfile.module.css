@@ -1,0 +1,69 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 90vh;
+  background-color: #fef7ff;
+  font-family: sans-serif;
+  padding: 20px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 2.5rem;
+  color: #68548e;
+  margin-bottom: 10px;
+}
+
+.card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.field {
+  margin-bottom: 15px;
+}
+
+.label {
+  font-weight: bold;
+  color: #49454e;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.value {
+  color: #1d1b20;
+}
+
+.logoutButton {
+  background-color: #68548e;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+}
+
+.buttonIcon {
+  margin-right: 8px;
+}
+
+.loading,
+.error {
+  text-align: center;
+  color: #49454e;
+  margin-top: 20px;
+}
+
+.error {
+  color: #ba1a1a;
+}
