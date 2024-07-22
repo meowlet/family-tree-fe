@@ -5,6 +5,7 @@ import styles from "./Tree.module.css";
 import Auth from "@/util/Auth";
 import { AddNodeForm } from "./form/AddNodeForm";
 import { useRouter } from "next/router";
+import { EditNodeForm } from "./form/EditForm";
 
 export interface TreeProps {
   treeId: string;
@@ -24,12 +25,35 @@ export function Tree(props: TreeProps) {
   const [authorizedNodes, setAuthorizedNodes] = useState<Set<string>>(
     new Set()
   );
+
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editingNode, setEditingNode] = useState<any>(null);
+
+  const handleCloseEditForm = () => {
+    setShowEditForm(false);
+    setEditingNode(null);
+  };
+
+  const handleEditFormSubmit = async (updatedNodeData: any) => {
+    try {
+      console.log(updatedNodeData);
+      await fetcher.put(`node/${editingNode._id}`, updatedNodeData);
+      mutate();
+      setShowEditForm(false);
+      setEditingNode(null);
+    } catch (error) {
+      console.error("Error updating node:", error);
+      alert("Failed to update node. Please try again.");
+    }
+  };
+
   const [hasFullAccess, setHasFullAccess] = useState(false);
 
   const { data, error, mutate } = useSWR<any>(
     "tree/" + props.treeId,
     fetcher.get
   );
+
   useEffect(() => {
     if (data) {
       const treeInfo = data.data.treeInfo;
@@ -56,7 +80,7 @@ export function Tree(props: TreeProps) {
           children.forEach((child) => addAuthorizedNodes(child._id));
         };
 
-        const userNode = nodes.find((n) => n.user._id === currentUserId);
+        const userNode = nodes.find((n) => n.user?._id === currentUserId);
         if (userNode) {
           addAuthorizedNodes(userNode._id);
         }
@@ -85,6 +109,15 @@ export function Tree(props: TreeProps) {
     fetcher.get
   );
 
+  const existingUserIds = data
+    ? data.data.treeNodes.map((n: any) => n.user?._id)
+    : [];
+
+  const filteredSearchResults = spouseSearchResults?.data.filter(
+    (user: any) =>
+      !existingUserIds.includes(user?._id) || user?._id === currentUserId
+  );
+
   if (error) return <div>{error.response.data.message}</div>;
   if (!data) return <div>Loading...</div>;
 
@@ -105,7 +138,9 @@ export function Tree(props: TreeProps) {
   };
 
   const handleEditClick = (nodeId: string) => {
-    console.log("Edit clicked for node:", nodeId);
+    const nodeToEdit = nodes.find((node: any) => node._id === nodeId);
+    setEditingNode(nodeToEdit);
+    setShowEditForm(true);
   };
 
   const handleAddSpouseClick = (nodeId: string) => {
@@ -196,7 +231,7 @@ export function Tree(props: TreeProps) {
     const children = findChildren(node._id);
 
     const showAddButton =
-      hasFullAccess || (isDirectDescendant && isAuthorized(node._id));
+      hasFullAccess || isDirectDescendant || node.user?._id === currentUserId;
     const showAddSpouseButton =
       hasFullAccess || (!spouse && isAuthorized(node._id));
 
@@ -205,15 +240,21 @@ export function Tree(props: TreeProps) {
         <div className={styles.nodeRow}>
           <div
             className={`${styles.node} ${
-              node.gender ? styles.maleNode : styles.femaleNode
+              node.user
+                ? node.gender
+                  ? styles.maleNode
+                  : styles.femaleNode
+                : styles.deletedNode
             }`}
             onMouseEnter={() => setHoveredNode(node._id)}
             onMouseLeave={() => setHoveredNode(null)}
-            onClick={() => handleNodeClick(node._id)} // Add onClick event here
+            onClick={() => handleNodeClick(node._id)}
           >
-            {node.user.fullName}
+            {node.user?.fullName || "Deleted User"}
             {hoveredNode === node._id &&
-              (hasFullAccess || isAuthorized(node._id)) && (
+              (hasFullAccess ||
+                isAuthorized(node._id) ||
+                node.user?._id === currentUserId) && (
                 <>
                   <div
                     className={`${styles.bottomButtonContainer} ${
@@ -223,7 +264,7 @@ export function Tree(props: TreeProps) {
                     <div
                       className={styles.editButton}
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent triggering the node click
+                        e.stopPropagation();
                         handleEditClick(node._id);
                       }}
                     >
@@ -233,7 +274,7 @@ export function Tree(props: TreeProps) {
                       <div
                         className={styles.addButton}
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering the node click
+                          e.stopPropagation();
                           handleAddClick(node._id);
                         }}
                       >
@@ -243,7 +284,7 @@ export function Tree(props: TreeProps) {
                     <div
                       className={styles.deleteButton}
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent triggering the node click
+                        e.stopPropagation();
                         handleDeleteClick(node._id);
                       }}
                     >
@@ -254,7 +295,7 @@ export function Tree(props: TreeProps) {
                     <div
                       className={styles.addSpouseButton}
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent triggering the node click
+                        e.stopPropagation();
                         handleAddSpouseClick(node._id);
                       }}
                     >
@@ -275,7 +316,7 @@ export function Tree(props: TreeProps) {
                 onMouseLeave={() => setHoveredNode(null)}
                 onClick={() => handleNodeClick(spouse._id)} // Add onClick event here
               >
-                {spouse.user.fullName}
+                {spouse.user?.fullName}
                 {hoveredNode === spouse._id &&
                   (hasFullAccess || isAuthorized(spouse._id)) && (
                     <div className={styles.bottomButtonContainer}>
@@ -364,12 +405,12 @@ export function Tree(props: TreeProps) {
                 value={spouseSearchQuery}
                 onChange={handleSpouseSearch}
               />
-              {spouseSearchResults && (
+              {filteredSearchResults && (
                 <select onChange={(e) => handleSpouseSelect(e.target.value)}>
                   <option value="">Select a spouse</option>
-                  {spouseSearchResults.data.map((user: any) => (
-                    <option key={user._id} value={user._id}>
-                      {user.fullName} ({user.userName})
+                  {filteredSearchResults.map((user: any) => (
+                    <option key={user?._id} value={user?._id}>
+                      {user?.fullName} ({user?.userName})
                     </option>
                   ))}
                 </select>
@@ -385,6 +426,19 @@ export function Tree(props: TreeProps) {
                 Cancel
               </button>
             </form>
+          </div>
+        </div>
+      )}
+      {showEditForm && editingNode && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <h2>Edit Node</h2>
+            <EditNodeForm
+              treeId={props.treeId}
+              node={editingNode}
+              onClose={handleCloseEditForm}
+              onSubmit={handleEditFormSubmit}
+            />
           </div>
         </div>
       )}

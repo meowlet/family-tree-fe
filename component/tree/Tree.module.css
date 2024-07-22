@@ -96,3 +96,7 @@
   top: 50%;
   transform: translateY(-50%);
 }
+
+.deletedNode {
+  background-color: #d3d3d3;
+}
