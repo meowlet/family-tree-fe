@@ -94,6 +94,7 @@ export default function SignInForm() {
           {isLoading ? "Signing in..." : "Sign in"}
         </button>
       </form>
+      <a href="/forget">Forget password?</a>
     </div>
   );
 }
