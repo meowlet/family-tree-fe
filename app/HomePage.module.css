@@ -1,0 +1,167 @@
+.container {
+  display: flex;
+  min-height: 90vh;
+  background-color: #fef7ff;
+  font-family: sans-serif;
+  padding-left: 10vh;
+}
+
+.navbar {
+  width: 250px;
+  background-color: #fef7ff;
+  padding: 20px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #68548e;
+  margin-bottom: 20px;
+}
+
+.navList {
+  list-style-type: none;
+  padding: 0;
+}
+
+.navItem {
+  margin-bottom: 15px;
+}
+
+.navItemActive {
+  color: #68548e;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.navIcon {
+  margin-right: 10px;
+}
+
+.main {
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.banner {
+  background: linear-gradient(to right, #cac5ca, #7a757f);
+  border-radius: 8px;
+  padding: 30px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.bannerTitle {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.bannerSubtitle {
+  margin-bottom: 20px;
+}
+
+.bannerButton {
+  background-color: white;
+  color: #68548e;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.buttonIcon {
+  margin-right: 8px;
+}
+
+.buttonGroup {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.buttonPrimary {
+  background-color: #68548e;
+  color: white;
+}
+
+.buttonSecondary {
+  background-color: #e7e0eb;
+  color: #49454e;
+}
+
+.userCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.userAvatar {
+  width: 60px;
+  height: 60px;
+  background-color: #e7e0eb;
+  border-radius: 8px;
+  margin-right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatarShape {
+  width: 30px;
+  height: 30px;
+  background-color: #7a757f;
+  transform: rotate(45deg);
+}
+
+.userInfo {
+  flex-grow: 1;
+}
+
+.userName {
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+}
+
+.userJoinDate,
+.userDescription {
+  color: #7a757f;
+  margin-bottom: 5px;
+}
+
+.userActions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.starRating {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.starIcon,
+.heartIcon {
+  color: #68548e;
+}
