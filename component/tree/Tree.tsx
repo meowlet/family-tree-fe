@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import { fetcher } from "@/api";
 import useSWR from "swr";
 import styles from "./Tree.module.css";
-import Auth from "@/util/Auth";
 import { AddNodeForm } from "./form/AddNodeForm";
-import { useRouter } from "next/router";
 import { EditNodeForm } from "./form/EditForm";
+import { useRouter } from "next/router";
 
 export interface TreeProps {
   treeId: string;
@@ -13,30 +12,147 @@ export interface TreeProps {
 
 export function Tree(props: TreeProps) {
   const {
-    data: useData,
+    data: userData,
     error: userError,
     mutate: userMutate,
   } = useSWR<any>("user/me", fetcher.get);
-  useEffect(() => {
-    userMutate();
-  }, []);
-  const currentUserId = useData?.data._id;
-  console.log(currentUserId);
+  const currentUserId = userData?.data._id;
+
   const [authorizedNodes, setAuthorizedNodes] = useState<Set<string>>(
     new Set()
   );
-
   const [showEditForm, setShowEditForm] = useState(false);
   const [editingNode, setEditingNode] = useState<any>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddSpouseForm, setShowAddSpouseForm] = useState(false);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [spouseSearchQuery, setSpouseSearchQuery] = useState("");
+  const [selectedSpouseId, setSelectedSpouseId] = useState<string | null>(null);
+  const [marriageDate, setMarriageDate] = useState("");
+
+  const { data, error, mutate } = useSWR<any>(
+    "tree/" + props.treeId,
+    fetcher.get
+  );
+
+  const { data: spouseSearchResults } = useSWR(
+    spouseSearchQuery
+      ? `user?query=${encodeURIComponent(spouseSearchQuery)}`
+      : null,
+    fetcher.get
+  );
+
+  useEffect(() => {
+    userMutate();
+  }, []);
+
+  useEffect(() => {
+    if (data && currentUserId) {
+      const nodes: any[] = data.data.treeNodes;
+      const authorized = new Set<string>();
+
+      const addAuthorizedNodes = (nodeId: string) => {
+        const node = nodes.find((n) => n._id === nodeId);
+        if (!node) return;
+
+        authorized.add(nodeId);
+        if (node.spouse) authorized.add(node.spouse);
+
+        const children = nodes.filter((n) => n.parentNode === nodeId);
+        children.forEach((child) => addAuthorizedNodes(child._id));
+      };
+
+      const userNode = nodes.find((n) => n.user?._id === currentUserId);
+      if (userNode) {
+        addAuthorizedNodes(userNode._id);
+      }
+
+      setAuthorizedNodes(authorized);
+    }
+  }, [data, currentUserId]);
+
+  const isAuthorized = (nodeId: string) => {
+    return authorizedNodes.has(nodeId) || treeInfo.creator === currentUserId;
+  };
+
+  const handleNodeClick = (nodeId: string) => {
+    window.location.href = `/node/${nodeId}`;
+  };
+
+  const handleAddClick = (nodeId: string) => {
+    setSelectedNodeId(nodeId);
+    setShowAddForm(true);
+  };
+
+  const handleEditClick = (nodeId: string) => {
+    const nodeToEdit = data.data.treeNodes.find(
+      (node: any) => node._id === nodeId
+    );
+    setEditingNode(nodeToEdit);
+    setShowEditForm(true);
+  };
+
+  const handleAddSpouseClick = (nodeId: string) => {
+    setSelectedNodeId(nodeId);
+    setShowAddSpouseForm(true);
+  };
+
+  const handleDeleteClick = async (nodeId: string) => {
+    const node = data.data.treeNodes.find((n: any) => n._id === nodeId);
+    if (!node) return;
+
+    if (node.user) {
+      if (window.confirm("Are you sure you want to delete this node?")) {
+        try {
+          await fetcher.delete(`node/${nodeId}`);
+          mutate();
+        } catch (error) {
+          console.error("Error deleting node:", error);
+          alert("Failed to delete node. Please try again.");
+        }
+      }
+    } else {
+      if (
+        window.confirm(
+          "This node is already deleted. Are you sure you want to permanently remove it?"
+        )
+      ) {
+        try {
+          await fetcher.delete(`node/force/${nodeId}`);
+          mutate();
+        } catch (error) {
+          console.error("Error force deleting node:", error);
+          alert("Failed to force delete node. Please try again.");
+        }
+      }
+    }
+  };
+
+  const handleCloseAddForm = () => {
+    setShowAddForm(false);
+    setSelectedNodeId(null);
+  };
 
   const handleCloseEditForm = () => {
     setShowEditForm(false);
     setEditingNode(null);
   };
 
+  const handleCloseAddSpouseForm = () => {
+    setShowAddSpouseForm(false);
+    setSelectedNodeId(null);
+    setSelectedSpouseId(null);
+    setMarriageDate("");
+    setSpouseSearchQuery("");
+  };
+
+  const handleAddFormSubmit = () => {
+    mutate();
+  };
+
   const handleEditFormSubmit = async (updatedNodeData: any) => {
     try {
-      console.log(updatedNodeData);
       await fetcher.put(`node/${editingNode._id}`, updatedNodeData);
       mutate();
       setShowEditForm(false);
@@ -47,113 +163,11 @@ export function Tree(props: TreeProps) {
     }
   };
 
-  const [hasFullAccess, setHasFullAccess] = useState(false);
-
-  const { data, error, mutate } = useSWR<any>(
-    "tree/" + props.treeId,
-    fetcher.get
-  );
-
-  useEffect(() => {
-    if (data) {
-      const treeInfo = data.data.treeInfo;
-      const nodes: any[] = data.data.treeNodes;
-
-      // Check if the current user is the creator or an admin
-      if (
-        treeInfo.creator === currentUserId ||
-        treeInfo.admin.includes(currentUserId)
-      ) {
-        setHasFullAccess(true);
-        setAuthorizedNodes(new Set(nodes.map((node) => node._id)));
-      } else {
-        const authorized = new Set<string>();
-
-        const addAuthorizedNodes = (nodeId: string) => {
-          const node = nodes.find((n) => n._id === nodeId);
-          if (!node) return;
-
-          authorized.add(nodeId);
-          if (node.spouse) authorized.add(node.spouse);
-
-          const children = nodes.filter((n) => n.parentNode === nodeId);
-          children.forEach((child) => addAuthorizedNodes(child._id));
-        };
-
-        const userNode = nodes.find((n) => n.user?._id === currentUserId);
-        if (userNode) {
-          addAuthorizedNodes(userNode._id);
-        }
-
-        setAuthorizedNodes(authorized);
-      }
-    }
-  }, [data, currentUserId]);
-
-  const handleNodeClick = (nodeId: string) => {
-    window.location.href = `/node/${nodeId}`;
-  };
-
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [showAddSpouseForm, setShowAddSpouseForm] = useState(false);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [spouseSearchQuery, setSpouseSearchQuery] = useState("");
-  const [selectedSpouseId, setSelectedSpouseId] = useState<string | null>(null);
-  const [marriageDate, setMarriageDate] = useState("");
-
-  const { data: spouseSearchResults } = useSWR(
-    spouseSearchQuery
-      ? `user?query=${encodeURIComponent(spouseSearchQuery)}`
-      : null,
-    fetcher.get
-  );
-
-  const existingUserIds = data
-    ? data.data.treeNodes.map((n: any) => n.user?._id)
-    : [];
-
-  const filteredSearchResults = spouseSearchResults?.data.filter(
-    (user: any) =>
-      !existingUserIds.includes(user?._id) || user?._id === currentUserId
-  );
-
-  if (error) return <div>{error.response.data.message}</div>;
-  if (!data) return <div>Loading...</div>;
-
-  const treeInfo: any = data.data.treeInfo;
-  const nodes: any = data.data.treeNodes;
-
-  const findChildren = (parentId: string) => {
-    return nodes.filter((node: any) => node.parentNode === parentId);
-  };
-
-  const findSpouse = (spouseId: string) => {
-    return nodes.find((node: any) => node._id === spouseId);
-  };
-
-  const handleAddClick = (nodeId: string) => {
-    setSelectedNodeId(nodeId);
-    setShowAddForm(true);
-  };
-
-  const handleEditClick = (nodeId: string) => {
-    const nodeToEdit = nodes.find((node: any) => node._id === nodeId);
-    setEditingNode(nodeToEdit);
-    setShowEditForm(true);
-  };
-
-  const handleAddSpouseClick = (nodeId: string) => {
-    setSelectedNodeId(nodeId);
-    setShowAddSpouseForm(true);
-  };
-
   const handleSpouseSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSpouseSearchQuery(e.target.value);
   };
 
   const handleSpouseSelect = (userId: string) => {
-    // set the node's _id of the selected user as the spouse
     setSelectedSpouseId(userId);
   };
 
@@ -166,11 +180,6 @@ export function Tree(props: TreeProps) {
     if (!selectedNodeId || !selectedSpouseId) return;
 
     try {
-      console.log({
-        firstOneId: selectedNodeId,
-        secondOneId: selectedSpouseId,
-        marriageDate: marriageDate || null,
-      });
       await fetcher.post("node/spouse", {
         firstOneId: selectedNodeId,
         secondOneId: selectedSpouseId,
@@ -189,51 +198,15 @@ export function Tree(props: TreeProps) {
     }
   };
 
-  const handleDeleteClick = async (nodeId: string) => {
-    if (window.confirm("Are you sure you want to delete this node?")) {
-      try {
-        await fetcher.delete(`node/${nodeId}`);
-        mutate();
-      } catch (error) {
-        console.error("Error deleting node:", error);
-        alert("Failed to delete node. Please try again.");
-      }
-    }
-  };
+  const renderNode = (node: any, level: number) => {
+    const spouse = node.spouse
+      ? data.data.treeNodes.find((n: any) => n._id === node.spouse)
+      : null;
+    const children = data.data.treeNodes.filter(
+      (n: any) => n.parentNode === node._id
+    );
 
-  const handleCloseAddForm = () => {
-    setShowAddForm(false);
-    setSelectedNodeId(null);
-  };
-
-  const handleCloseAddSpouseForm = () => {
-    setShowAddSpouseForm(false);
-    setSelectedNodeId(null);
-    setSelectedSpouseId(null);
-    setMarriageDate("");
-    setSpouseSearchQuery("");
-  };
-
-  const handleAddFormSubmit = () => {
-    mutate();
-  };
-
-  const isAuthorized = (nodeId: string) => {
-    return hasFullAccess || authorizedNodes.has(nodeId);
-  };
-
-  const renderNode = (
-    node: any,
-    level: number,
-    isDirectDescendant: boolean
-  ) => {
-    const spouse = node.spouse ? findSpouse(node.spouse) : null;
-    const children = findChildren(node._id);
-
-    const showAddButton =
-      hasFullAccess || isDirectDescendant || node.user?._id === currentUserId;
-    const showAddSpouseButton =
-      hasFullAccess || (!spouse && isAuthorized(node._id));
+    const showControls = isAuthorized(node._id);
 
     return (
       <div key={node._id} className={styles.nodeContainer}>
@@ -251,59 +224,50 @@ export function Tree(props: TreeProps) {
             onClick={() => handleNodeClick(node._id)}
           >
             {node.user?.fullName || "Deleted User"}
-            {hoveredNode === node._id &&
-              (hasFullAccess ||
-                isAuthorized(node._id) ||
-                node.user?._id === currentUserId) && (
-                <>
+            {hoveredNode === node._id && showControls && (
+              <>
+                <div className={styles.bottomButtonContainer}>
                   <div
-                    className={`${styles.bottomButtonContainer} ${
-                      showAddButton ? "" : styles.singleButton
-                    }`}
+                    className={styles.editButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditClick(node._id);
+                    }}
                   >
-                    <div
-                      className={styles.editButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditClick(node._id);
-                      }}
-                    >
-                      ✎
-                    </div>
-                    {showAddButton && (
-                      <div
-                        className={styles.addButton}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAddClick(node._id);
-                        }}
-                      >
-                        +
-                      </div>
-                    )}
-                    <div
-                      className={styles.deleteButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(node._id);
-                      }}
-                    >
-                      🗑️
-                    </div>
+                    ✎
                   </div>
-                  {showAddSpouseButton && (
-                    <div
-                      className={styles.addSpouseButton}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddSpouseClick(node._id);
-                      }}
-                    >
-                      ❤
-                    </div>
-                  )}
-                </>
-              )}
+                  <div
+                    className={styles.addButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddClick(node._id);
+                    }}
+                  >
+                    +
+                  </div>
+                  <div
+                    className={styles.deleteButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteClick(node._id);
+                    }}
+                  >
+                    🗑️
+                  </div>
+                </div>
+                {!spouse && (
+                  <div
+                    className={styles.addSpouseButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddSpouseClick(node._id);
+                    }}
+                  >
+                    ❤
+                  </div>
+                )}
+              </>
+            )}
           </div>
           {spouse && (
             <>
@@ -314,32 +278,31 @@ export function Tree(props: TreeProps) {
                 }`}
                 onMouseEnter={() => setHoveredNode(spouse._id)}
                 onMouseLeave={() => setHoveredNode(null)}
-                onClick={() => handleNodeClick(spouse._id)} // Add onClick event here
+                onClick={() => handleNodeClick(spouse._id)}
               >
                 {spouse.user?.fullName}
-                {hoveredNode === spouse._id &&
-                  (hasFullAccess || isAuthorized(spouse._id)) && (
-                    <div className={styles.bottomButtonContainer}>
-                      <div
-                        className={styles.editButton}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering the node click
-                          handleEditClick(spouse._id);
-                        }}
-                      >
-                        ✎
-                      </div>
-                      <div
-                        className={styles.deleteButton}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering the node click
-                          handleDeleteClick(spouse._id);
-                        }}
-                      >
-                        🗑️
-                      </div>
+                {hoveredNode === spouse._id && showControls && (
+                  <div className={styles.bottomButtonContainer}>
+                    <div
+                      className={styles.editButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(spouse._id);
+                      }}
+                    >
+                      ✎
                     </div>
-                  )}
+                    <div
+                      className={styles.deleteButton}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(spouse._id);
+                      }}
+                    >
+                      🗑️
+                    </div>
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -352,11 +315,7 @@ export function Tree(props: TreeProps) {
               {children.map((child: any) => (
                 <div key={child._id} className={styles.nodeContainer}>
                   <div className={styles.verticalConnector} />
-                  {renderNode(
-                    child,
-                    level + 1,
-                    hasFullAccess || isAuthorized(node._id)
-                  )}
+                  {renderNode(child, level + 1)}
                 </div>
               ))}
             </div>
@@ -366,13 +325,19 @@ export function Tree(props: TreeProps) {
     );
   };
 
-  const rootNode = nodes.find((node: any) => node._id === treeInfo.rootNode);
+  if (error) return <div>{error.response.data.message}</div>;
+  if (!data) return <div>Loading...</div>;
+
+  const treeInfo: any = data.data.treeInfo;
+  const rootNode = data.data.treeNodes.find(
+    (node: any) => node._id === treeInfo.rootNode
+  );
 
   return (
     <div className={styles.treeContainer}>
       <h1>{treeInfo.name}</h1>
       {rootNode ? (
-        renderNode(rootNode, 0, true)
+        renderNode(rootNode, 0)
       ) : (
         <AddNodeForm
           rootNode={treeInfo.rootNode}
@@ -399,32 +364,50 @@ export function Tree(props: TreeProps) {
           <div className={styles.modalContent}>
             <h2>Add Spouse</h2>
             <form onSubmit={handleAddSpouseSubmit}>
-              <input
-                type="text"
-                placeholder="Search for spouse"
-                value={spouseSearchQuery}
-                onChange={handleSpouseSearch}
-              />
-              {filteredSearchResults && (
-                <select onChange={(e) => handleSpouseSelect(e.target.value)}>
-                  <option value="">Select a spouse</option>
-                  {filteredSearchResults.map((user: any) => (
-                    <option key={user?._id} value={user?._id}>
-                      {user?.fullName} ({user?.userName})
-                    </option>
-                  ))}
-                </select>
+              <div>
+                <label htmlFor="spouseSearch">Search for spouse:</label>
+                <input
+                  id="spouseSearch"
+                  type="text"
+                  value={spouseSearchQuery}
+                  onChange={handleSpouseSearch}
+                  placeholder="Enter name or username"
+                  aria-label="Search for spouse by name or username"
+                />
+              </div>
+              {spouseSearchResults && (
+                <div>
+                  <label htmlFor="spouseSelect">Select a spouse:</label>
+                  <select
+                    id="spouseSelect"
+                    onChange={(e) => handleSpouseSelect(e.target.value)}
+                    aria-label="Select a spouse from search results"
+                  >
+                    <option value="">Choose a spouse</option>
+                    {spouseSearchResults.data.map((user: any) => (
+                      <option key={user?._id} value={user?._id}>
+                        {user?.fullName} ({user?.userName})
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
-              <input
-                type="date"
-                value={marriageDate}
-                onChange={handleMarriageDateChange}
-                placeholder="Marriage Date"
-              />
-              <button type="submit">Add Spouse</button>
-              <button type="button" onClick={handleCloseAddSpouseForm}>
-                Cancel
-              </button>
+              <div>
+                <label htmlFor="marriageDate">Marriage Date:</label>
+                <input
+                  id="marriageDate"
+                  type="date"
+                  value={marriageDate}
+                  onChange={handleMarriageDateChange}
+                  aria-label="Enter the date of marriage"
+                />
+              </div>
+              <div>
+                <button type="submit">Add Spouse</button>
+                <button type="button" onClick={handleCloseAddSpouseForm}>
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>

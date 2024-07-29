@@ -64,15 +64,15 @@ export function NodeInfo(props: { nodeId: string }) {
       <div className={styles.card}>
         <div className={styles.field}>
           <span className={styles.label}>Full Name:</span>
-          <span className={styles.value}>{user.fullName}</span>
+          <span className={styles.value}>{user ? user.fullName : "N/A"}</span>
         </div>
         <div className={styles.field}>
           <span className={styles.label}>Username:</span>
-          <span className={styles.value}>{user.userName}</span>
+          <span className={styles.value}>{user ? user.userName : "N/A"}</span>
         </div>
         <div className={styles.field}>
           <span className={styles.label}>Email:</span>
-          <span className={styles.value}>{user.email}</span>
+          <span className={styles.value}>{user ? user.email : "N/A"}</span>
         </div>
         <div className={styles.field}>
           <span className={styles.label}>Gender:</span>
@@ -107,7 +107,7 @@ export function NodeInfo(props: { nodeId: string }) {
         <div className={styles.field}>
           <span className={styles.label}>Member Since:</span>
           <span className={styles.value}>
-            {new Date(user.createdAt).toLocaleDateString()}
+            {new Date(user?.createdAt).toLocaleDateString()}
           </span>
         </div>
       </div>

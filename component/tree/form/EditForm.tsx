@@ -77,63 +77,101 @@ export function EditNodeForm({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <input
-          type="text"
-          placeholder="Search user by fullName or userName"
-          value={searchQuery}
-          onChange={handleSearch}
-        />
+    <form onSubmit={handleSubmit} className="edit-node-form">
+      <h2>Edit Node</h2>
+
+      <fieldset>
+        <legend>User Selection</legend>
+        <div>
+          <label htmlFor="user-search">Search for a different user:</label>
+          <input
+            id="user-search"
+            type="text"
+            placeholder="Enter name or username"
+            value={searchQuery}
+            onChange={handleSearch}
+            aria-label="Search for a different user by name or username"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="user-select">Select user:</label>
+          <select
+            id="user-select"
+            value={selectedUser || ""}
+            onChange={(e) => handleSelectUser(e.target.value)}
+            aria-label="Select a user for this node"
+          >
+            <option value={node.user?._id}>
+              {node.user?.fullName} (Current)
+            </option>
+            {filteredSearchResults?.map((user: any) => (
+              <option key={user?._id} value={user?._id}>
+                {user?.fullName} ({user?.userName})
+              </option>
+            ))}
+          </select>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Node Information</legend>
+        <div>
+          <label htmlFor="gender">Gender:</label>
+          <select
+            id="gender"
+            name="gender"
+            value={nodeData.gender.toString()}
+            onChange={handleNodeDataChange}
+            required
+            aria-label="Select gender"
+          >
+            <option value="false">Female</option>
+            <option value="true">Male</option>
+          </select>
+        </div>
+        <div>
+          <label htmlFor="birthDate">Birth Date:</label>
+          <input
+            id="birthDate"
+            type="date"
+            name="birthDate"
+            value={nodeData.birthDate}
+            onChange={handleNodeDataChange}
+            required
+            aria-label="Enter birth date"
+          />
+        </div>
+        <div>
+          <label htmlFor="deathDate">Death Date (optional):</label>
+          <input
+            id="deathDate"
+            type="date"
+            name="deathDate"
+            value={nodeData.deathDate}
+            onChange={handleNodeDataChange}
+            aria-label="Enter death date if applicable"
+          />
+        </div>
+        <div>
+          <label htmlFor="marriageDate">Marriage Date (optional):</label>
+          <input
+            id="marriageDate"
+            type="date"
+            name="marriageDate"
+            value={nodeData.marriageDate}
+            onChange={handleNodeDataChange}
+            aria-label="Enter marriage date if applicable"
+          />
+        </div>
+      </fieldset>
+
+      <div className="form-actions">
+        <button type="submit">Update Node</button>
+        <button type="button" onClick={onClose}>
+          Cancel
+        </button>
       </div>
-
-      <select
-        value={selectedUser || ""}
-        onChange={(e) => handleSelectUser(e.target.value)}
-      >
-        <option value={node.user?._id}>{node.user?.fullName} (Current)</option>
-        {filteredSearchResults?.map((user: any) => (
-          <option key={user?._id} value={user?._id}>
-            {user?.fullName} ({user?.userName})
-          </option>
-        ))}
-      </select>
-
-      <select
-        name="gender"
-        value={nodeData.gender.toString()}
-        onChange={handleNodeDataChange}
-      >
-        <option value="false">Female</option>
-        <option value="true">Male</option>
-      </select>
-
-      <input
-        type="date"
-        name="birthDate"
-        value={nodeData.birthDate}
-        onChange={handleNodeDataChange}
-        placeholder="Birth Date"
-      />
-      <input
-        type="date"
-        name="deathDate"
-        value={nodeData.deathDate}
-        onChange={handleNodeDataChange}
-        placeholder="Death Date (optional)"
-      />
-      <input
-        type="date"
-        name="marriageDate"
-        value={nodeData.marriageDate}
-        onChange={handleNodeDataChange}
-        placeholder="Marriage Date (optional)"
-      />
-
-      <button type="submit">Update Node</button>
-      <button type="button" onClick={onClose}>
-        Cancel
-      </button>
     </form>
   );
 }
